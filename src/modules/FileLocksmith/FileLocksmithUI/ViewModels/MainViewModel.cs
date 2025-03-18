@@ -9,11 +9,15 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+<<<<<<< HEAD
 using System.Windows;
+=======
+
+>>>>>>> main
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FileLocksmith.Interop;
 using ManagedCommon;
+using PowerToys.FileLocksmithLib.Interop;
 
 namespace PowerToys.FileLocksmithUI.ViewModels
 {
@@ -99,10 +103,14 @@ namespace PowerToys.FileLocksmithUI.ViewModels
 
             _cancelProcessWatching = new CancellationTokenSource();
 
-            foreach (ProcessResult p in await FindProcesses(paths))
+            var processes_found = await FindProcesses(paths);
+            if (processes_found is not null)
             {
-                Processes.Add(p);
-                WatchProcess(p, _cancelProcessWatching.Token);
+                foreach (ProcessResult p in processes_found)
+                {
+                    Processes.Add(p);
+                    WatchProcess(p, _cancelProcessWatching.Token);
+                }
             }
 
             IsLoading = false;
@@ -113,7 +121,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             var results = new List<ProcessResult>();
             await Task.Run(() =>
             {
-                results = NativeMethods.FindProcessesRecursive(paths).ToList();
+                results = NativeMethods.FindProcessesRecursive(paths)?.ToList();
             });
             return results;
         }

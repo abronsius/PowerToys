@@ -153,8 +153,13 @@ IFACEMETHODIMP ExplorerCommand::QueryContextMenu(HMENU hmenu, UINT indexMenu, UI
 
         if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
         {
+            m_etwTrace.UpdateState(true);
+
             hr = HRESULT_FROM_WIN32(GetLastError());
             Trace::QueryContextMenuError(hr);
+
+            m_etwTrace.Flush();
+            m_etwTrace.UpdateState(false);
         }
         else
         {
@@ -167,6 +172,7 @@ IFACEMETHODIMP ExplorerCommand::QueryContextMenu(HMENU hmenu, UINT indexMenu, UI
 
 IFACEMETHODIMP ExplorerCommand::InvokeCommand(CMINVOKECOMMANDINFO* pici)
 {
+<<<<<<< HEAD
     Trace::Invoked();
 
     if (HRESULT result = LaunchUI(pici); FAILED(result))
@@ -177,6 +183,69 @@ IFACEMETHODIMP ExplorerCommand::InvokeCommand(CMINVOKECOMMANDINFO* pici)
 
     Trace::InvokedRet(S_OK);
     return S_OK;
+=======
+    m_etwTrace.UpdateState(true);
+
+    HRESULT hr = E_FAIL;
+
+    if (FileLocksmithSettingsInstance().GetEnabled() &&
+        pici && (IS_INTRESOURCE(pici->lpVerb)) &&
+        (LOWORD(pici->lpVerb) == 0))
+    {
+        Trace::Invoked();
+        ipc::Writer writer;
+
+        if (HRESULT result = writer.start(); FAILED(result))
+        {
+            Trace::InvokedRet(result);
+            m_etwTrace.Flush();
+            m_etwTrace.UpdateState(false);
+            return result;
+        }
+
+        if (HRESULT result = LaunchUI(pici, &writer); FAILED(result))
+        {
+            Trace::InvokedRet(result);
+            m_etwTrace.Flush();
+            m_etwTrace.UpdateState(false);
+            return result;
+        }
+
+        IShellItemArray* shell_item_array;
+        hr = SHCreateShellItemArrayFromDataObject(m_data_obj, __uuidof(IShellItemArray), reinterpret_cast<void**>(&shell_item_array));
+        if (SUCCEEDED(hr))
+        {
+            DWORD num_items;
+            shell_item_array->GetCount(&num_items);
+            for (DWORD i = 0; i < num_items; i++)
+            {
+                IShellItem* item;
+                hr = shell_item_array->GetItemAt(i, &item);
+                if (SUCCEEDED(hr))
+                {
+                    LPWSTR file_path;
+                    hr = item->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
+                    if (SUCCEEDED(hr))
+                    {
+                        // TODO Aggregate items and send to UI
+                        writer.add_path(file_path);
+                        CoTaskMemFree(file_path);
+                    }
+
+                    item->Release();
+                }
+            }
+
+            shell_item_array->Release();
+        }
+    }
+
+    Trace::InvokedRet(hr);
+
+    m_etwTrace.Flush();
+    m_etwTrace.UpdateState(false);
+    return hr;
+>>>>>>> main
 }
 
 IFACEMETHODIMP ExplorerCommand::GetCommandString(UINT_PTR idCmd, UINT uType, UINT* pReserved, CHAR* pszName, UINT cchMax)
