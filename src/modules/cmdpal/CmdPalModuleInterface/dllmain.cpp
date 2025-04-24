@@ -223,7 +223,7 @@ public:
 
 #ifdef _DEBUG
         packageName = L"Microsoft.CommandPalette.Dev";
-        launchPath = L"shell:AppsFolder\\Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App";
+        launchPath = L"shell:AppsFolder\\Microsoft.CommandPalettes.Dev_8wekyb3d8bbwe!App";
 #endif
 
         if (!package::GetRegisteredPackage(packageName, false).has_value())
@@ -288,7 +288,7 @@ public:
     static void RetryLaunch(bool first_time_launch, std::wstring path)
     {
         const int base_delay_milliseconds = 1000;
-        int max_retry = first_time_launch ? 9 : 1; // 2**9 - 1 seconds. Control total wait time within 10 min.
+        int max_retry = first_time_launch ? 9 : 0; // 2**9 - 1 seconds. Control total wait time within 10 min.
         int retry = 0;
         do
         {
@@ -298,7 +298,7 @@ public:
                 std::this_thread::sleep_for(std::chrono::milliseconds(delay));
             }
 
-            auto launch_result = LaunchApp(path, L"RunFromPT", false, retry == max_retry - 1);
+            auto launch_result = LaunchApp(path, L"RunFromPT", false, retry < max_retry - 1);
             if (launch_result)
             {
                 Logger::info(L"CmdPal launched successfully after {} retries.", retry);
