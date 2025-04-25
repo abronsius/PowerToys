@@ -59,6 +59,8 @@ namespace Microsoft.PowerToys.UITest
             PerformAction(
                 (actions, windowElement) =>
                 {
+                    actions.MoveToElement(windowElement);
+
                     if (rightClick)
                     {
                         actions.ContextClick();

@@ -83,14 +83,17 @@ namespace MouseUtils.UITests
             Session.SendKeys(Key.Win, Key.Alt, Key.A);
             Task.Delay(1000).Wait();
 
+            VerifyMousePointerCrosshairsAppears(ref settings);
+            Task.Delay(500).Wait();
             xy0 = Session.GetMousePosition();
-            Session.MoveMouseTo(xy0.Item1 - 100, xy0.Item2 - 100);
+            Session.MoveMouseTo(xy0.Item1 - 100, xy0.Item2 - 50);
             Session.PerformMouseAction(MouseActionType.LeftClick);
             VerifyMousePointerCrosshairsAppears(ref settings);
             Task.Delay(500).Wait();
 
             xy0 = Session.GetMousePosition();
-            Session.MoveMouseTo(xy0.Item1 - 50, xy0.Item2 - 50);
+            Session.MoveMouseTo(xy0.Item1 - 200, xy0.Item2 - 50);
+            Task.Delay(1000).Wait();
             VerifyMousePointerCrosshairsAppears(ref settings);
 
             // [Test Case] Press the activation shortcut again and verify the crosshairs disappear.
